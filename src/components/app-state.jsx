@@ -1,6 +1,7 @@
 // AppState: shared mutable state for tickets, deals, and allocations.
-// Initial values come from data.jsx; create + move ops live here so any screen can call them.
+// Fetches real data from API; create + move ops live here so any screen can call them.
 import React from 'react'
+import { fetchWithAuth, API_BASE } from '../utils/api'
 
 const AppStateContext = React.createContext(null);
 function useAppState() { return React.useContext(AppStateContext); }
@@ -18,44 +19,50 @@ function makeId(prefix, list) {
   return prefix + (Date.now() % 100000);
 }
 
-// Generate initial allocations once (was random in resources.jsx; now seeded + persisted in state)
+// Generate empty initial allocations
 function initialAllocations() {
-  const projectTones = { p1:'#15348a', p2:'#d97706', p3:'#65bb3c', p4:'#7c3aed', p5:'#2f5fd3' };
-  const projs = Object.keys(projectTones);
-  const all = {};
-  TEAM.forEach(person => {
-    all[person.id] = [[],[],[],[],[]]; // 5 days
-    for (let di = 0; di < 5; di++) {
-      const seed = (person.id.charCodeAt(1) * 31 + di * 7) % 100;
-      const chips = [];
-      if (seed % 7 < 5) chips.push({ id: `${person.id}-${di}-a`, projectId: projs[(seed) % projs.length], hours: 4 + (seed % 3) });
-      if (seed % 5 < 3) chips.push({ id: `${person.id}-${di}-b`, projectId: projs[(seed+2) % projs.length], hours: 2 + (seed % 3) });
-      if (seed % 11 < 2) chips.push({ id: `${person.id}-${di}-pto`, projectId: 'pto', hours: 8, label: 'PTO' });
-      all[person.id][di] = chips;
-    }
-  });
-  return all;
+  return {};
 }
 
 function AppStateProvider({ children }) {
-  const [tickets, setTickets] = React.useState(TICKETS);
-  const [deals, setDeals] = React.useState(DEALS);
+  const [tickets, setTickets] = React.useState([]);
+  const [deals, setDeals] = React.useState([]);
   const [allocations, setAllocations] = React.useState(initialAllocations);
+  
+  // Fetch real tickets from API on mount (only if authenticated)
+  React.useEffect(() => {
+    const token = localStorage.getItem('vyntrox_token');
+    if (!token) return; // Don't fetch if not logged in
+    
+    async function fetchTickets() {
+      try {
+        const res = await fetchWithAuth(`${API_BASE}/tickets`);
+        if (res) {
+          const data = await res.json();
+          if (data.tickets) {
+            setTickets(data.tickets);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch tickets:', err);
+      }
+    }
+    fetchTickets();
+  }, []);
 
   const addTicket = React.useCallback((t) => {
     setTickets(prev => {
       const id = makeId('VT-', prev);
-      const client = CLIENTS.find(c => c.id === t.client);
       const next = {
         id,
         title: t.title,
-        client: client?.name || '—',
+        client: t.clientName || '—',
         clientId: t.client,
         project: t.project,
         priority: t.priority,
         status: 'Open',
-        assignee: t.assignee || 'u1',
-        reporter: CURRENT_USER.admin.name,
+        assignee: t.assignee || null,
+        reporter: t.reporter || 'System',
         opened: 'just now',
         sla: t.priority === 'Urgent' ? '4h left' : t.priority === 'High' ? '1d left' : '3d left',
         category: t.category,
@@ -64,6 +71,40 @@ function AppStateProvider({ children }) {
       toast({ title: `Created ${id}`, body: t.title, tone: 'green' });
       return [next, ...prev];
     });
+  }, []);
+
+  // API version for client users
+  const apiAddTicket = React.useCallback(async (ticketData, userEmail) => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/client/tickets`, {
+        method: 'POST',
+        body: {
+          title: ticketData.title,
+          description: ticketData.description,
+          priority: ticketData.priority?.toLowerCase() || 'medium',
+          category: ticketData.category || 'Support',
+          clientId: userEmail,
+          clientName: userEmail,
+          projectId: ticketData.project,
+        },
+      });
+      
+      if (!res) return; // 401 handled by fetchWithAuth
+      
+      const data = await res.json();
+      
+      // Check if response was successful (2xx status)
+      if (res.ok && data) {
+        toast({ title: 'Ticket created', body: ticketData.title, tone: 'green' });
+        return data.ticket;
+      } else {
+        throw new Error(data?.message || `Failed to create ticket: ${res.status}`);
+      }
+    } catch (err) {
+      console.error('Failed to create ticket:', err);
+      toast({ title: 'Error', body: err.message || 'Failed to create ticket', tone: 'red' });
+      throw err;
+    }
   }, []);
 
   const addDeal = React.useCallback((d) => {
@@ -115,7 +156,7 @@ function AppStateProvider({ children }) {
   }, []);
 
   const value = {
-    tickets, addTicket,
+    tickets, addTicket, apiAddTicket,
     deals, addDeal, moveDeal,
     allocations, moveAllocation,
   };
@@ -124,3 +165,5 @@ function AppStateProvider({ children }) {
 }
 
 Object.assign(window, { AppStateContext, AppStateProvider, useAppState });
+
+export { AppStateContext, AppStateProvider, useAppState };

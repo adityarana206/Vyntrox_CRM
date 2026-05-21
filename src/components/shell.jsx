@@ -1,5 +1,7 @@
 // Shell: Sidebar, Topbar, Role switcher, Notifications dropdown
 import React from 'react'
+import { ROLES, NAV } from './data'
+import { Ic, Avatar, IconBtn, ProgressBar } from './ui'
 const { useState: useStateShell, useEffect: useEffectShell, useRef: useRefShell } = React;
 
 function Logo({ size = 28, withWordmark = true }) {
@@ -23,7 +25,7 @@ function Logo({ size = 28, withWordmark = true }) {
 
 function RoleSwitcher({ role, setRole, compact }) {
   const [open, setOpen] = useStateShell(false);
-  const cur = ROLES.find(r => r.id === role);
+  const cur = ROLES.find(r => r.id === role) || ROLES[0];
   const ref = useRefShell(null);
   useEffectShell(() => {
     const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -33,10 +35,10 @@ function RoleSwitcher({ role, setRole, compact }) {
   return (
     <div className="role-switcher" ref={ref}>
       <button className="role-switcher-trigger" onClick={() => setOpen(o => !o)}>
-        <span className="role-dot" style={{ background: cur.color }}/>
+        <span className="role-dot" style={{ background: cur?.color || '#888' }}/>
         <div className="role-text">
-          <div className="role-label">{cur.label} view</div>
-          <div className="role-sub">{cur.sub}</div>
+          <div className="role-label">{cur?.label || 'User'} view</div>
+          <div className="role-sub">{cur?.sub || 'Select role'}</div>
         </div>
         <Ic.chevD width={14} height={14} className="role-chev"/>
       </button>
@@ -64,7 +66,8 @@ function RoleSwitcher({ role, setRole, compact }) {
 }
 
 function Sidebar({ role, route, setRoute, collapsed, setCollapsed }) {
-  const items = NAV.filter(n => n.roles.includes(role));
+  const userRole = role || 'admin';
+  const items = NAV.filter(n => n.roles.includes(userRole));
   return (
     <aside className={`sidebar ${collapsed ? 'is-collapsed' : ''}`}>
       <div className="sidebar-head">
@@ -89,23 +92,6 @@ function Sidebar({ role, route, setRoute, collapsed, setCollapsed }) {
           })}
         </div>
 
-        {!collapsed && (
-          <div className="sidebar-aside">
-            <div className="aside-title">Pinned</div>
-            <button className="aside-item" onClick={() => setRoute('projects')}>
-              <span className="aside-swatch" style={{ background: '#15348a' }}/>
-              Northwind Portal v2
-            </button>
-            <button className="aside-item" onClick={() => setRoute('projects')}>
-              <span className="aside-swatch" style={{ background: '#d97706' }}/>
-              Helio Bank — SSO
-            </button>
-            <button className="aside-item" onClick={() => setRoute('projects')}>
-              <span className="aside-swatch" style={{ background: '#65bb3c' }}/>
-              Quanta IoT
-            </button>
-          </div>
-        )}
       </nav>
 
       {!collapsed && (
@@ -126,7 +112,8 @@ function Sidebar({ role, route, setRoute, collapsed, setCollapsed }) {
 function NotificationsButton() {
   const [open, setOpen] = useStateShell(false);
   const ref = useRefShell(null);
-  const unread = NOTIFICATIONS.filter(n => n.unread).length;
+  const [notifications, setNotifications] = useStateShell([]);
+  const unread = notifications.filter(n => n.unread).length;
   useEffectShell(() => {
     const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', onDoc);
@@ -145,20 +132,26 @@ function NotificationsButton() {
             <button className="link-btn">Mark all read</button>
           </div>
           <div className="notif-list">
-            {NOTIFICATIONS.map(n => {
-              const initials = n.who.split(' ').map(w=>w[0]).slice(0,2).join('');
-              const hueMap = { mention: 217, assigned: 12, system: 200, sales: 96 };
-              return (
-                <div key={n.id} className={`notif-item ${n.unread ? 'unread' : ''}`}>
-                  <Avatar initials={initials} hue={hueMap[n.tone] || 217} size={32}/>
-                  <div className="notif-body">
-                    <div className="notif-text"><strong>{n.who}</strong> {n.text}</div>
-                    <div className="notif-when">{n.when} ago</div>
+            {notifications.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+                No notifications
+              </div>
+            ) : (
+              notifications.map(n => {
+                const initials = n.who?.split(' ')?.map(w=>w[0])?.slice(0,2)?.join('') || '?';
+                const hueMap = { mention: 217, assigned: 12, system: 200, sales: 96 };
+                return (
+                  <div key={n.id} className={`notif-item ${n.unread ? 'unread' : ''}`}>
+                    <Avatar initials={initials} hue={hueMap[n.tone] || 217} size={32}/>
+                    <div className="notif-body">
+                      <div className="notif-text"><strong>{n.who}</strong> {n.text}</div>
+                      <div className="notif-when">{n.when} ago</div>
+                    </div>
+                    {n.unread && <span className="notif-unread-dot"/>}
                   </div>
-                  {n.unread && <span className="notif-unread-dot"/>}
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       )}
@@ -166,8 +159,8 @@ function NotificationsButton() {
   );
 }
 
-function Topbar({ role, route, setRoute, setRole, search, setSearch }) {
-  const user = CURRENT_USER[role];
+function Topbar({ role, route, setRoute, setRole, search, setSearch, authUser, onLogout }) {
+  const user = authUser;
   const titles = {
     dashboard: 'Dashboard', tickets: 'Tickets', tasks: 'My tasks',
     projects: 'Projects', sales: 'Sales pipeline', clients: 'Clients',
@@ -207,20 +200,22 @@ function Topbar({ role, route, setRoute, setRole, search, setSearch }) {
         </div>
       </div>
       <div className="topbar-right">
-        <RoleSwitcher role={role} setRole={setRole}/>
-        <div className="topbar-divider"/>
         <NotificationsButton/>
         <IconBtn icon={<Ic.message width={18} height={18}/>}/>
         <div className="topbar-user">
-          <Avatar initials={user.initials} hue={ROLES.find(r=>r.id===role).id === 'admin' ? 220 : 200}/>
+          <Avatar initials={user?.initials || 'U'} hue={ROLES.find(r=>r.id===role)?.id === 'admin' ? 220 : 200}/>
           <div className="user-text">
-            <div className="user-name">{user.name}</div>
-            <div className="user-title">{user.title}</div>
+            <div className="user-name">{user?.name || 'User'}</div>
+            <div className="user-title">{user?.title || 'Member'}</div>
           </div>
         </div>
+        <div className="topbar-divider"/>
+        <IconBtn icon={<Ic.logout width={18} height={18}/>} title="Logout" onClick={onLogout}/>
       </div>
     </header>
   );
 }
 
 Object.assign(window, { Logo, Sidebar, Topbar, RoleSwitcher });
+
+export { Logo, Sidebar, Topbar, RoleSwitcher };

@@ -1,0 +1,13 @@
+export { default as LoginPage } from './LoginPage';
+export { default as DashboardPage } from './DashboardPage';
+export { default as TicketsPage } from './TicketsPage';
+export { default as ProjectsPage } from './ProjectsPage';
+export { default as ClientsPage } from './ClientsPage';
+export { default as TasksPage } from './TasksPage';
+export { default as SalesPage } from './SalesPage';
+export { default as ResourcesPage } from './ResourcesPage';
+export { default as ReportsPage } from './ReportsPage';
+export { default as AdminPage } from './AdminPage';
+export { default as SettingsPage } from './SettingsPage';
+export { default as PortalPage } from './PortalPage';
+export { default as NotFoundPage } from './NotFoundPage';

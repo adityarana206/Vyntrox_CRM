@@ -1,5 +1,9 @@
 // Sales pipeline (kanban) + deal detail
 import React from 'react'
+import { useAppState } from './app-state'
+import { Button, Card, SectionHead, Avatar, Badge, Tabs, Ic } from './ui'
+import { DEAL_STAGES } from './data'
+
 function SalesScreen({ selectedDeal, setSelectedDeal }) {
   const { deals, moveDeal } = useAppState();
   const [view, setView] = React.useState('board');
@@ -318,3 +322,5 @@ function DealDetail({ deal, onBack }) {
 }
 
 Object.assign(window, { SalesScreen });
+
+export default SalesScreen;

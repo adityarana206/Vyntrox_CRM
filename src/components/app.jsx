@@ -76,6 +76,10 @@ function App() {
   const [selectedTicket, setSelectedTicket] = React.useState(null);
   const [selectedProject, setSelectedProject] = React.useState(null);
   const [selectedDeal, setSelectedDeal] = React.useState(null);
+  const [authUser, setAuthUser] = React.useState(() => {
+    const s = localStorage.getItem('vyntrox_user');
+    return s ? JSON.parse(s) : null;
+  });
 
   // Apply theme/density/brand color on changes
   React.useEffect(() => {
@@ -99,7 +103,7 @@ function App() {
   if (t.showLogin) {
     return (
       <AppStateProvider>
-        <LoginScreen onLogin={(role) => { setTweak({ role, showLogin: false }); setRoute('dashboard'); }}/>
+        <LoginScreenRedux onLogin={(user) => { setAuthUser(user); setTweak({ role: user.role, showLogin: false }); setRoute('dashboard'); }}/>
       </AppStateProvider>
     );
   }
@@ -109,7 +113,7 @@ function App() {
       <div className="app">
         <Sidebar role={t.role} route={route} setRoute={setRoute} collapsed={t.sidebarCollapsed} setCollapsed={(fn) => setTweak('sidebarCollapsed', typeof fn === 'function' ? fn(t.sidebarCollapsed) : fn)}/>
         <div className="app-main">
-          <Topbar role={t.role} route={effectiveRoute} setRoute={setRoute} setRole={setRole} search={search} setSearch={setSearch}/>
+          <Topbar role={t.role} route={effectiveRoute} setRoute={setRoute} setRole={setRole} search={search} setSearch={setSearch} authUser={authUser}/>
           <div className="app-scroll">
             {effectiveRoute === 'dashboard' && (
               <Dashboard
@@ -118,10 +122,11 @@ function App() {
                 setSelectedTicket={setSelectedTicket}
                 setSelectedProject={setSelectedProject}
                 setSelectedDeal={setSelectedDeal}
+                authUser={authUser}
               />
             )}
             {effectiveRoute === 'tickets' && (
-              <TicketsScreen role={t.role} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket}/>
+              <TicketsScreen role={t.role} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} authUser={authUser}/>
             )}
             {effectiveRoute === 'tasks' && <TasksScreen/>}
             {effectiveRoute === 'projects' && (
@@ -183,7 +188,7 @@ function App() {
           </TweakSection>
 
           <TweakSection label="Demo">
-            <TweakButton label="Show login screen" onClick={() => setTweak('showLogin', true)}/>
+            <TweakButton label="Show login screen" onClick={() => { localStorage.removeItem('vyntrox_token'); localStorage.removeItem('vyntrox_user'); setAuthUser(null); setTweak('showLogin', true); }}/>
             <TweakButton label="Open New ticket modal" onClick={() => openModal('ticket')} secondary/>
             <TweakButton label="Open New deal modal" onClick={() => openModal('deal')} secondary/>
           </TweakSection>

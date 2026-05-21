@@ -41,6 +41,10 @@ const Ic = {
   calendar:(p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>,
   fire:    (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-6 1-9Z"/></svg>,
   zap:     (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M13 3 4 14h7l-1 7 9-11h-7l1-7Z"/></svg>,
+  logout:  (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>,
+  upload:  (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8 12 3 7 8"/><path d="M12 3v12"/></svg>,
+  close:   (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M18 6 6 18M6 6l12 12"/></svg>,
+  refresh: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
 };
 
 // ===== Atoms =====
@@ -176,9 +180,9 @@ function SectionHead({ title, sub, action }) {
   );
 }
 
-function Button({ children, variant = 'primary', size = 'md', icon, iconRight, onClick, ...rest }) {
+function Button({ children, variant = 'primary', size = 'md', icon, iconRight, onClick, loading, disabled, ...rest }) {
   return (
-    <button className={`btn btn-${variant} btn-${size}`} onClick={onClick} {...rest}>
+    <button className={`btn btn-${variant} btn-${size}`} onClick={onClick} disabled={disabled || loading} {...rest}>
       {icon && <span className="btn-icon">{icon}</span>}
       {children}
       {iconRight && <span className="btn-icon">{iconRight}</span>}
@@ -247,3 +251,5 @@ Object.assign(window, {
   ProgressBar, Sparkline, MiniBars, Donut, Card, SectionHead,
   Button, IconBtn, KPI, Tabs, EmptyState,
 });
+
+export { Ic, Avatar, AvatarStack, Badge, StatusPill, PriorityChip, ProgressBar, Sparkline, MiniBars, Donut, Card, SectionHead, Button, IconBtn, KPI, Tabs, EmptyState };

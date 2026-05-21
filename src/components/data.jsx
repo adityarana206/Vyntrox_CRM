@@ -109,14 +109,14 @@ const ACTIVITY = [
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: 'grid',     roles: ['admin','manager','resource','sales','client'] },
-  { id: 'tickets',   label: 'Tickets',   icon: 'ticket',   roles: ['admin','manager','resource','client'], badge: 4 },
-  { id: 'tasks',     label: 'My tasks',  icon: 'check',    roles: ['resource','manager'], badge: 3 },
+  { id: 'tickets',   label: 'Tickets',   icon: 'ticket',   roles: ['admin','manager','resource','client'] },
+  { id: 'tasks',     label: 'My tasks',  icon: 'check',    roles: ['admin','manager','resource'] },
   { id: 'projects',  label: 'Projects',  icon: 'folder',   roles: ['admin','manager','resource','client'] },
   { id: 'sales',     label: 'Pipeline',  icon: 'pipeline', roles: ['admin','sales','manager'] },
   { id: 'clients',   label: 'Clients',   icon: 'building', roles: ['admin','sales','manager'] },
   { id: 'resources', label: 'Resources', icon: 'people',   roles: ['admin','manager'] },
   { id: 'reports',   label: 'Reports',   icon: 'chart',    roles: ['admin','manager','sales'] },
-  { id: 'portal',    label: 'My account',icon: 'user',     roles: ['client'] },
+  { id: 'portal',    label: 'My account',icon: 'user',     roles: ['admin','client'] },
   { id: 'admin',     label: 'Users & roles', icon: 'shield', roles: ['admin'] },
   { id: 'settings',  label: 'Settings',  icon: 'cog',      roles: ['admin','manager','resource','sales','client'] },
 ];
@@ -149,3 +149,5 @@ Object.assign(window, {
   DEAL_STAGES, DEALS, TASKS, NOTIFICATIONS, ACTIVITY, NAV,
   USERS_ADMIN, ROLE_DEFS,
 });
+
+export { ROLES, CURRENT_USER, TEAM, CLIENTS, PROJECTS, TICKETS, DEAL_STAGES, DEALS, TASKS, NOTIFICATIONS, ACTIVITY, NAV, USERS_ADMIN, ROLE_DEFS };

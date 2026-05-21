@@ -12,6 +12,7 @@ import './components/resources'
 import './components/dashboard'
 import './components/screens-misc'
 import './components/login'
+import './components/login-redux'
 import { App } from './components/app'
 
 export default App
