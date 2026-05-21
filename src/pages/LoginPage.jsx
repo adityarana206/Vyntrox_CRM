@@ -56,7 +56,64 @@ const LoginPage = () => {
 
   return (
     <div className="login-page">
+      {/* LEFT SIDE - Art Cards (now on left) */}
       <div className="login-left">
+        <div className="login-art">
+          <div className="login-art-cards">
+            <div className="art-card art-card-1">
+              <div className="art-card-head">
+                <span className="art-card-dot" style={{ background: '#dc2626' }}/>
+                <span className="muted small">VT-2418 · Urgent</span>
+              </div>
+              <div className="art-card-title">Login throws 503 after SSO redirect</div>
+              <div className="art-card-foot">
+                <Avatar initials="TB" hue={12} size={20}/>
+                <span className="muted small">In progress · 4h SLA left</span>
+              </div>
+            </div>
+            <div className="art-card art-card-2">
+              <div className="muted small">Pipeline · This quarter</div>
+              <div className="art-card-big mono">$1.74M</div>
+              <div className="art-card-trend">
+                <Sparkline data={[1.1,1.2,1.3,1.4,1.5,1.6,1.74]} color="#65bb3c" width={120} height={28}/>
+                <span className="tone-green small">+12.4%</span>
+              </div>
+            </div>
+            <div className="art-card art-card-3">
+              <div className="art-card-head">
+                <span className="art-card-dot" style={{ background: '#65bb3c' }}/>
+                <span>Northwind Portal v2</span>
+              </div>
+              <div className="art-card-bar"><ProgressBar value={68} tone="navy" height={6}/></div>
+              <div className="art-card-foot art-card-foot-spread">
+                <AvatarStack ids={['u1','u2','u4']} size={20}/>
+                <span className="muted small">68% · due Jul 12</span>
+              </div>
+            </div>
+            <div className="art-card art-card-4">
+              <div className="art-card-head">
+                <span className="art-card-dot" style={{ background: '#2f5fd3' }}/>
+                <span className="muted small">Closing this month</span>
+              </div>
+              <div className="art-card-title-sm">Brightline — Loyalty platform</div>
+              <div className="mono"><strong>$215k</strong> <span className="muted small">· 80% confidence</span></div>
+            </div>
+          </div>
+        </div>
+        <div className="login-quote">
+          <div className="login-quote-text">"One workspace replaced our helpdesk, our deal tracker, and three spreadsheets. Onboarding new managers takes a morning, not a week."</div>
+          <div className="login-quote-author">
+            <Avatar initials="DO" hue={220} size={28}/>
+            <div>
+              <div>Daniel Okafor</div>
+              <div className="muted small">Delivery Manager · Vyntrox</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT SIDE - Login Form (now on right) */}
+      <div className="login-right">
         <div className="login-brand">
           <Logo size={36}/>
         </div>
@@ -128,61 +185,6 @@ const LoginPage = () => {
                 <Ic.chevR width={12} height={12} className="muted"/>
               </button>
             ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="login-right">
-        <div className="login-art">
-          <div className="login-art-cards">
-            <div className="art-card art-card-1">
-              <div className="art-card-head">
-                <span className="art-card-dot" style={{ background: '#dc2626' }}/>
-                <span className="muted small">VT-2418 · Urgent</span>
-              </div>
-              <div className="art-card-title">Login throws 503 after SSO redirect</div>
-              <div className="art-card-foot">
-                <Avatar initials="TB" hue={12} size={20}/>
-                <span className="muted small">In progress · 4h SLA left</span>
-              </div>
-            </div>
-            <div className="art-card art-card-2">
-              <div className="muted small">Pipeline · This quarter</div>
-              <div className="art-card-big mono">$1.74M</div>
-              <div className="art-card-trend">
-                <Sparkline data={[1.1,1.2,1.3,1.4,1.5,1.6,1.74]} color="#65bb3c" width={120} height={28}/>
-                <span className="tone-green small">+12.4%</span>
-              </div>
-            </div>
-            <div className="art-card art-card-3">
-              <div className="art-card-head">
-                <span className="art-card-dot" style={{ background: '#65bb3c' }}/>
-                <span>Northwind Portal v2</span>
-              </div>
-              <div className="art-card-bar"><ProgressBar value={68} tone="navy" height={6}/></div>
-              <div className="art-card-foot art-card-foot-spread">
-                <AvatarStack ids={['u1','u2','u4']} size={20}/>
-                <span className="muted small">68% · due Jul 12</span>
-              </div>
-            </div>
-            <div className="art-card art-card-4">
-              <div className="art-card-head">
-                <span className="art-card-dot" style={{ background: '#2f5fd3' }}/>
-                <span className="muted small">Closing this month</span>
-              </div>
-              <div className="art-card-title-sm">Brightline — Loyalty platform</div>
-              <div className="mono"><strong>$215k</strong> <span className="muted small">· 80% confidence</span></div>
-            </div>
-          </div>
-        </div>
-        <div className="login-quote">
-          <div className="login-quote-text">"One workspace replaced our helpdesk, our deal tracker, and three spreadsheets. Onboarding new managers takes a morning, not a week."</div>
-          <div className="login-quote-author">
-            <Avatar initials="DO" hue={220} size={28}/>
-            <div>
-              <div>Daniel Okafor</div>
-              <div className="muted small">Delivery Manager · Vyntrox</div>
-            </div>
           </div>
         </div>
       </div>
