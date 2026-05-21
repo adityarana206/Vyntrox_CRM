@@ -368,6 +368,17 @@ function TicketsScreen({ role, selectedTicket, setSelectedTicket, authUser }) {
   if (filter === 'mine' && role !== 'client') rows = rows.filter(t => t.assignee === authUser?.id || t.assignee === 'u1');
   if (filter === 'unassigned') rows = rows.filter(t => t.status === 'Open' || t.status === 'Backlog' || t.status === 'open' || !t.assignee);
   if (search) rows = rows.filter(t => (t.title + (t._id || t.id) + (t.clientName || t.client)).toLowerCase().includes(search.toLowerCase()));
+  
+  // Pagination - 50 items per page
+  const [page, setPage] = React.useState(1);
+  const itemsPerPage = 50;
+  const totalPages = Math.ceil(rows.length / itemsPerPage);
+  const paginatedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  
+  // Reset to page 1 when filter/search changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [filter, search, role]);
 
   const counts = {
     all: displayTickets.length,
@@ -403,9 +414,9 @@ function TicketsScreen({ role, selectedTicket, setSelectedTicket, authUser }) {
     }
   }, [selectedTicket, role, loading, tickets]);
 
-  // Handle create ticket for admin/manager
+  // Handle create ticket for admin/manager/client
   const handleCreateTicket = async (ticketData) => {
-    if (role !== 'admin' && role !== 'manager') return;
+    if (role !== 'admin' && role !== 'manager' && role !== 'client') return;
     setCreating(true);
     try {
       // Handle both old inline modal format and original modals.jsx format
@@ -478,7 +489,7 @@ function TicketsScreen({ role, selectedTicket, setSelectedTicket, authUser }) {
           </div>
           <Button variant="ghost" icon={<Ic.filter width={14} height={14}/>} size="sm">Filter</Button>
           <Button variant="ghost" icon={<Ic.sort width={14} height={14}/>} size="sm">Sort</Button>
-          {(role === 'admin' || role === 'manager') && (
+          {(role === 'admin' || role === 'manager' || role === 'client') && (
             <Button variant="primary" icon={<Ic.plus width={14} height={14}/>} size="sm" onClick={() => setShowCreateModal(true)}>New ticket</Button>
           )}
         </div>
@@ -499,8 +510,12 @@ function TicketsScreen({ role, selectedTicket, setSelectedTicket, authUser }) {
           <div className="bt-row"><div className="bt-c-title p-4 text-center text-gray-500">Loading tickets...</div></div>
         ) : rows.length === 0 ? (
           <div className="bt-row"><div className="bt-c-title p-4 text-center text-gray-400">No tickets found</div></div>
-        ) : rows.map(t => {
+        ) : paginatedRows.map(t => {
           const ticketId = t._id || t.id;
+          // DEBUG: Log assignee data
+          if (t.assignee) {
+            console.log('Ticket', ticketId, 'assignee:', t.assignee, 'assigneeName:', t.assigneeName);
+          }
           const assigneeName = t.assigneeName || t.assignee || 'Unassigned';
           const assigneeInitials = assigneeName !== 'Unassigned' 
             ? assigneeName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
@@ -537,17 +552,50 @@ function TicketsScreen({ role, selectedTicket, setSelectedTicket, authUser }) {
           );
         })}
       </Card>
+      
+      {/* Debug Info */}
+      {console.log('Tickets Debug:', { ticketsCount: tickets.length, rowsCount: rows.length, paginatedCount: paginatedRows.length, loading })}
 
-      <div className="page-pagination">
-        <span className="muted">Showing {rows.length} of {displayTickets.length} tickets</span>
-        <div className="pager">
-          <button className="pager-btn"><Ic.chevR width={12} height={12} style={{ transform: 'rotate(180deg)' }}/></button>
-          <button className="pager-btn is-active">1</button>
-          <button className="pager-btn">2</button>
-          <button className="pager-btn">3</button>
-          <button className="pager-btn"><Ic.chevR width={12} height={12}/></button>
+      {/* Pagination Controls */}
+      {rows.length > itemsPerPage && (
+        <div className="pagination">
+          <div className="pagination-info">
+            Showing {(page - 1) * itemsPerPage + 1} - {Math.min(page * itemsPerPage, rows.length)} of {rows.length}
+          </div>
+          <div className="pagination-buttons">
+            <button 
+              className="page-btn" 
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              <Ic.chevL width={16} height={16}/>
+            </button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) pageNum = i + 1;
+              else if (page <= 3) pageNum = i + 1;
+              else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
+              else pageNum = page - 2 + i;
+              return (
+                <button
+                  key={pageNum}
+                  className={`page-btn ${page === pageNum ? 'active' : ''}`}
+                  onClick={() => setPage(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button 
+              className="page-btn" 
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              <Ic.chevR width={16} height={16}/>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Create Ticket Modal */}
       {showCreateModal && (
@@ -584,7 +632,8 @@ function TicketDetail({ ticket, onBack, role, authUser = {}, onTicketUpdate }) {
   // Toast helper
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type }), 3000);
+    const timer = setTimeout(() => setToast({ show: false, message: '', type }), 3000);
+    return () => clearTimeout(timer);
   };
   
   // Fetch resources, projects and linked tasks
@@ -649,9 +698,14 @@ function TicketDetail({ ticket, onBack, role, authUser = {}, onTicketUpdate }) {
 
   // Derived values with null-safe access
   const ticketData = currentTicket || {};
-  const assignee = role === 'client' 
-    ? { name: ticketData.assigneeName || 'Unassigned', initials: ticketData.assigneeName ? ticketData.assigneeName.split(' ').map(n => n[0]).join('') : 'NA', hue: 200 }
-    : TEAM.find(u => u.id === ticketData.assignee);
+  const assigneeName = ticketData.assigneeName || 'Unassigned';
+  const assignee = { 
+    name: assigneeName, 
+    initials: assigneeName !== 'Unassigned' 
+      ? assigneeName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
+      : 'NA', 
+    hue: 200 
+  };
   const project = projects.find(p => (p._id || p.id) === (ticketData.projectId || ticketData.project)) || PROJECTS.find(p => (p._id || p.id) === (ticketData.projectId || ticketData.project));
   const clientName = ticketData.clientName || ticketData.client || '—';
   const reporterName = ticketData.reporter || ticketData.reporterId || '—';
@@ -682,7 +736,9 @@ function TicketDetail({ ticket, onBack, role, authUser = {}, onTicketUpdate }) {
       }
       if (!res) return; // 401 handled
       const data = await res.json();
-      setActivity(data.activity || []);
+      console.log('Activity API response:', data);
+      // Backend returns 'logs', frontend expects 'activity'
+      setActivity(data.activity || data.logs || []);
       setComments(data.comments || []);
     } catch (err) {
       console.error('Failed to fetch activity:', err);
@@ -1155,10 +1211,13 @@ function TicketDetail({ ticket, onBack, role, authUser = {}, onTicketUpdate }) {
                             setCurrentTicket(prev => ({ 
                               ...prev, 
                               assigneeId: newAssigneeId,
-                              assignee: newAssigneeId,
+                              assignee: assigneeName,
                               assigneeName: assigneeName
                             }));
                             showToast('Ticket assigned to ' + assigneeName, 'success');
+                            // Refresh ticket data and activity to show assignment change
+                            await fetchTicketDetail();
+                            await fetchActivity();
                           } else {
                             showToast(data.message || 'Failed to assign', 'error');
                           }
