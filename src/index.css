@@ -1801,9 +1801,16 @@ p { margin: 0 0 12px; color: var(--ink-2); }
 
 .login-right {
   display: flex; flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: 36px 56px;
   overflow-y: auto;
   background: var(--bg);
+}
+
+.login-right > * {
+  max-width: 420px;
+  width: 100%;
 }
 .login-art { flex: 1; position: relative; }
 .login-art-cards {
