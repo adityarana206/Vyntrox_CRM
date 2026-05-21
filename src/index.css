@@ -1713,9 +1713,15 @@ p { margin: 0 0 12px; color: var(--ink-2); }
   background: var(--bg);
 }
 .login-left {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(47,95,211,0.10), transparent 40%),
+    radial-gradient(circle at 70% 70%, rgba(101,187,60,0.10), transparent 45%),
+    linear-gradient(135deg, #0c1b4a 0%, #15348a 100%);
   display: flex; flex-direction: column;
-  padding: 36px 56px;
-  overflow-y: auto;
+  padding: 56px;
+  color: white;
+  position: relative;
+  overflow: hidden;
 }
 .login-brand { margin-bottom: auto; }
 .login-form-wrap { max-width: 420px; width: 100%; }
@@ -1794,15 +1800,10 @@ p { margin: 0 0 12px; color: var(--ink-2); }
 .demo-card-sub { font-size: 11px; color: var(--ink-3); }
 
 .login-right {
-  background:
-    radial-gradient(circle at 30% 30%, rgba(47,95,211,0.10), transparent 40%),
-    radial-gradient(circle at 70% 70%, rgba(101,187,60,0.10), transparent 45%),
-    linear-gradient(135deg, #0c1b4a 0%, #15348a 100%);
   display: flex; flex-direction: column;
-  padding: 56px;
-  color: white;
-  position: relative;
-  overflow: hidden;
+  padding: 36px 56px;
+  overflow-y: auto;
+  background: var(--bg);
 }
 .login-art { flex: 1; position: relative; }
 .login-art-cards {
@@ -2129,7 +2130,7 @@ p { margin: 0 0 12px; color: var(--ink-2); }
 [data-theme="dark"] .modal { background: var(--surface); }
 [data-theme="dark"] .modal-foot { background: var(--bg-soft); }
 [data-theme="dark"] .funnel-bar-wrap { background: linear-gradient(180deg, transparent 0%, var(--bg) 100%); }
-[data-theme="dark"] .login-right {
+[data-theme="dark"] .login-left {
   background:
     radial-gradient(circle at 30% 30%, rgba(47,95,211,0.18), transparent 40%),
     radial-gradient(circle at 70% 70%, rgba(101,187,60,0.14), transparent 45%),
